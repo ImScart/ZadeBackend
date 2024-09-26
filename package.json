@@ -2,6 +2,7 @@
   "dependencies": {
     "argon2": "^0.41.1",
     "express": "^4.21.0",
+    "jsonwebtoken": "^9.0.2",
     "moment-timezone": "^0.5.45",
     "mongoose": "^8.6.2"
   }

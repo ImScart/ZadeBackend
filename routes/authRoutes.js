@@ -2,9 +2,13 @@ const mongoose = require('mongoose');
 const Account = mongoose.model('accounts');
 const moment = require('moment-timezone');
 const argon2 = require('argon2');
+var functions = require('../functions');
+const jwt = require('jsonwebtoken');
+const keys = require('../config/keys.js');
+const { authenticate } = require('../functions.js');
 
 module.exports = app => {
-    app.post('/register', async (req, res) => {
+    app.post('/auth/register', async (req, res) => {
         const { username, password } = req.body;
         if (!username || !password) {
             return res.send({
@@ -28,7 +32,8 @@ module.exports = app => {
                     password: hash, // Store the hashed password
                     coins: 0,
                     userIP: null,
-                    lastAuth: new Date()
+                    lastAuth: new Date(),
+                    refreshToken: null
                 });
 
                 await newAccount.save();
@@ -48,10 +53,10 @@ module.exports = app => {
         }
     });
 
-    app.post('/login', async (req, res) => {
-        const { username, password } = req.body;
+    app.post('/auth/login', async (req, res) => {
+        const { username, password, rememberMe } = req.body;
 
-        if (!username || !password) {
+        if (!username || !password|| !rememberMe) {
             return res.send({
                 code: 1,
                 message: 'Invalid credentials'
@@ -71,25 +76,54 @@ module.exports = app => {
 
         // Verify the password
             const isMatch = await argon2.verify(userAccount.password, password);
-            if (isMatch) {
+            if (isMatch) 
+            {
                 // Password is correct, proceed with login
                 console.log('User ' + username + ' is logging in');
 
                 // Update lastAuth field to the current time
                 userAccount.lastAuth = new Date();
+                
+                // Generating access token (valid for 15 minutes)
+                let accessToken;
+                let refreshToken;
+                if(rememberMe === '1')
+                {
+                    accessToken =jwt.sign(
+                        {id: userAccount._id.toString(), username:userAccount.username},
+                        keys.secretKey,
+                        {expiresIn: '15m'}
+                    );
+                    refreshToken = jwt.sign(
+                        { id: userAccount._id.toString() },
+                        keys.secretKey,
+                        { expiresIn: '7d' }
+                    );
+                    
+                    // Store the refresh token in database
+                    userAccount.refreshToken= refreshToken;
+                }
                 await userAccount.save();
 
-                // Send the user account data with formatted lastAuth
-                return res.send({
+                // Preparing response data
+                let responseData = {
                     code: 0,
                     message: 'success',
                     id: userAccount.id,
                     username: userAccount.username,
                     coins: userAccount.coins,
                     userIP: userAccount.userIP,
-                    lastAuth: moment(userAccount.lastAuth).tz("America/New_York").format('YYYY-MM-DD HH:mm:ss')  // EST time instead of UTC
-                });
-            } else {
+                    lastAuth: moment(userAccount.lastAuth).tz("America/New_York").format('YYYY-MM-DD HH:mm:ss')
+                };
+
+                if (rememberMe === '1') {
+                    responseData.accessToken = accessToken;
+                    responseData.refreshToken = refreshToken;
+                }
+                // Send the user account data with formatted lastAuth
+                return res.send(responseData);
+            } 
+            else {
                 // Password is incorrect
                 return res.send({
                     code: 1,
@@ -97,4 +131,90 @@ module.exports = app => {
                 });
             }
     });
+
+    // Refresh access token
+    app.post('/auth/refresh', async (req, res) => {
+        const {refreshToken} = req.body;
+        if(!refreshToken)
+        {
+            return res.status(401).send(
+                {code:1,
+                 message:'Refresh token required'
+                });
+        }
+
+        await jwt.verify(refreshToken,keys.secretKey, async(err,decoded) =>
+        {
+            if(err)
+            {
+                return res.status(403).send(
+                    {
+                        code:1,
+                        message:'Invalid refresh token'
+                    }
+                );
+            }
+            // Try to find the user
+            const userAccount = await Account.findOne({ _id: decoded.id, refreshToken: refreshToken });
+            // No user found
+            if(!userAccount)
+            {
+                return res.status(403).send(
+                    {
+                        code:1,
+                        message:'Invalid refresh token'
+                    }
+                );
+            }
+            const accessToken = jwt.sign(
+                {id: userAccount._id.toString(), username:userAccount.username},
+                keys.secretKey,
+                {expiresIn: '15m'}
+            );
+
+            const newRefreshToken = jwt.sign(
+                {id: userAccount._id.toString()},
+                keys.secretKey,
+                {expiresIn:'7d'}
+            );
+            userAccount.refreshToken=newRefreshToken;
+            await userAccount.save();
+
+            return res.send({
+                code:0,
+                message:'success',
+                accessToken:accessToken,
+                refreshToken:newRefreshToken
+            });
+        });
+    });
+
+    app.post('/auth/logout',authenticate,async (req,res) =>
+    {
+        const userId = req.user.id;
+        const userAccount = await Account.findOne({_id: req.user.id});
+        if(!userAccount)
+        {
+            return res.status(400).send({
+                code:1,
+                mesasge: 'User not found'
+            });
+        }
+        console.log('User '+req.user.username+ ' is logging out');
+        userAccount.refreshToken = null;
+        await userAccount.save();
+        return res.send({
+            code:0,
+            message:'success'
+        })
+    });
+
+    // Protected with access token. Placeholder
+    app.get('/account/checkcoins', authenticate, (req, res) => { 
+        res.send({
+            message:'Protected',
+            user:req.user.username
+        });
+    });
 };
+ 
