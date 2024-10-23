@@ -90,12 +90,12 @@ module.exports = app => {
                 if(rememberMe === '1')
                 {
                     accessToken =jwt.sign(
-                        {id: userAccount._id.toString(), username:userAccount.username},
+                        {id: userAccount._id.toString(), username:userAccount.username, tokenType:'access'},
                         keys.secretKey,
                         {expiresIn: '15m'}
                     );
                     refreshToken = jwt.sign(
-                        { id: userAccount._id.toString() },
+                        { id: userAccount._id.toString(), tokenType:'refresh'},
                         keys.secretKey,
                         { expiresIn: '7d' }
                     );
@@ -145,7 +145,7 @@ module.exports = app => {
 
         await jwt.verify(refreshToken,keys.secretKey, async(err,decoded) =>
         {
-            if(err)
+            if(err||decoded.tokenType!='refresh')
             {
                 return res.status(403).send(
                     {
@@ -167,13 +167,13 @@ module.exports = app => {
                 );
             }
             const accessToken = jwt.sign(
-                {id: userAccount._id.toString(), username:userAccount.username},
+                {id: userAccount._id.toString(), username:userAccount.username,tokenType:'access'},
                 keys.secretKey,
                 {expiresIn: '15m'}
             );
 
             const newRefreshToken = jwt.sign(
-                {id: userAccount._id.toString()},
+                {id: userAccount._id.toString(),tokenType:'refresh'},
                 keys.secretKey,
                 {expiresIn:'7d'}
             );
@@ -191,7 +191,7 @@ module.exports = app => {
 
     app.post('/auth/logout',authenticate,async (req,res) =>
     {
-        const userId = req.user.id;
+        const userId = req.decoded.id;
         const userAccount = await Account.findOne({_id: req.user.id});
         if(!userAccount)
         {
@@ -200,7 +200,7 @@ module.exports = app => {
                 mesasge: 'User not found'
             });
         }
-        console.log('User '+req.user.username+ ' is logging out');
+        console.log('User '+req.decoded.username+ ' is logging out');
         userAccount.refreshToken = null;
         await userAccount.save();
         return res.send({
@@ -210,10 +210,20 @@ module.exports = app => {
     });
 
     // Protected with access token. Placeholder
-    app.get('/account/checkcoins', authenticate, (req, res) => { 
+    app.get('/account/checkcoins', authenticate, async (req, res) => { 
+        const userId = req.decoded.id;
+        const userAccount = await Account.findOne({_id: userId});
+        if(!userAccount)
+            {
+                return res.status(400).send({
+                    code:1,
+                    mesasge: 'User not found'
+                });
+            }
         res.send({
-            message:'Protected',
-            user:req.user.username
+            code:0,
+            message:'success',
+            coins:userAccount.coins
         });
     });
 };
