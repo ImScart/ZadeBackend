@@ -1,0 +1,26 @@
+[
+  {
+    "port": 8080,
+    "inUse": false
+  },
+  {
+    "port": 8081,
+    "inUse": false
+  },
+  {
+    "port": 8082,
+    "inUse": false
+  },
+  {
+    "port": 8083,
+    "inUse": false
+  },
+  {
+    "port": 8084,
+    "inUse": false
+  },
+  {
+    "port": 8085,
+    "inUse": false
+  }
+]
