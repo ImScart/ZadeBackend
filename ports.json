@@ -1,26 +1,47 @@
 [
   {
     "port": 8080,
-    "inUse": false
+    "inUse": false,
+    "ownerUsername": null,
+    "ownerId": null,
+    "startTime": "2025-01-31 21:37:03"
   },
   {
     "port": 8081,
-    "inUse": false
+    "inUse": false,
+    "ownerUsername": null,
+    "ownerId": null,
+    "startTime": "2024-12-27 23:16:34"
   },
   {
     "port": 8082,
-    "inUse": false
+    "inUse": false,
+    "ownerUsername": null,
+    "ownerId": null,
+    "startTime": "2024-12-27 23:08:57"
   },
   {
     "port": 8083,
-    "inUse": false
+    "inUse": false,
+    "ownerUsername": null,
+    "ownerId": null
   },
   {
     "port": 8084,
-    "inUse": false
+    "inUse": false,
+    "ownerUsername": null,
+    "ownerId": null
   },
   {
     "port": 8085,
-    "inUse": false
+    "inUse": false,
+    "ownerUsername": null,
+    "ownerId": null
+  },
+  {
+    "port": 8086,
+    "inUse": false,
+    "ownerUsername": null,
+    "ownerId": null
   }
 ]

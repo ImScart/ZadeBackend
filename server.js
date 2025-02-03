@@ -4,6 +4,14 @@ const app = express();
 const bodyParser = require('body-parser');
 const fs = require('fs').promises;
 const portsFilePath = './ports.json';
+const cors = require('cors');
+
+app.use(cors({
+    origin: 'http://144.217.83.146',
+    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+    credentials:true
+}));
 
 const resetPorts = async () => {
     try {
@@ -12,9 +20,11 @@ const resetPorts = async () => {
         let ports = JSON.parse(data);
         
         ports.forEach(port => port.inUse = false);
+        ports.forEach(port => port.ownerUsername = null);
+        ports.forEach(port => port.ownerId = null);
         
         await fs.writeFile(portsFilePath, JSON.stringify(ports, null, 2), 'utf8');
-        console.log('All ports have been reset to inUse: false.');
+        console.log('All ports have been reset');
     } catch (err) {
         console.error('Error handling ports.json:', err);
     }
@@ -23,12 +33,14 @@ const resetPorts = async () => {
 const startServer = async () => {
     await resetPorts();
 
+    app.use(express.json());
     app.use(bodyParser.urlencoded({ extended: false }));
 
     const mongoose = require('mongoose');
     mongoose.connect(keys.mongoURI);
 
     require('./model/Account.js');
+    require('./model/Skin.js');
     require('./routes/authRoutes.js')(app);
 
     app.listen(keys.port, () => {

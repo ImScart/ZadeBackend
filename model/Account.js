@@ -7,9 +7,12 @@ const accountschema = new Schema({
     password: String,
     refreshToken: String,
 
-    coins:String,
+    coins:Number,
+    skins: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Skin' }],
     userIP:String,
-    lastAuth: Date
+    lastAuth: Date,
+
+    isAdmin: Boolean
 });
 
 mongoose.model('accounts', accountschema);
