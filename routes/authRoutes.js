@@ -129,7 +129,6 @@ module.exports = app => {
             }
             res.cookie('refreshToken', refreshToken, {
                 httpOnly: true,
-                secure: true,
                 sameSite: 'Strict',
                 maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
             });
@@ -146,7 +145,7 @@ module.exports = app => {
 
     // Refresh access token
     app.post('/auth/refresh', async (req, res) => {
-        const { refreshToken } = req.body;
+        const refreshToken = req.cookies.refreshToken;
         if (!refreshToken) {
             return res.status(401).send(
                 {
@@ -159,7 +158,7 @@ module.exports = app => {
             if (err && err.name === 'TokenExpiredError') {
                 return res.status(403).send({
                     code: 3,
-                    message: 'Refresh token has expired'
+                    message: 'Refresh token  has expired'
                 });
             }
             if (err || decoded.tokenType != 'refresh') {
@@ -194,12 +193,15 @@ module.exports = app => {
             );
             userAccount.refreshToken = newRefreshToken;
             await userAccount.save();
-
+            res.cookie('refreshToken', newRefreshToken, {
+                httpOnly: true,
+                sameSite: 'Strict',
+                maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
+            });
             return res.status(200).send({
                 code: 0,
                 message: 'success',
-                accessToken: accessToken,
-                refreshToken: newRefreshToken
+                accessToken: accessToken
             });
         });
     });

@@ -5,6 +5,7 @@ const bodyParser = require('body-parser');
 const fs = require('fs').promises;
 const portsFilePath = './ports.json';
 const cors = require('cors');
+const cookieParser = require('cookie-parser');
 
 app.use(cors({
     origin: 'http://144.217.83.146',
@@ -34,6 +35,7 @@ const startServer = async () => {
     await resetPorts();
 
     app.use(express.json());
+    app.use(cookieParser());
     app.use(bodyParser.urlencoded({ extended: false }));
 
     const mongoose = require('mongoose');

@@ -1,47 +1,51 @@
 [
   {
     "port": 8080,
-    "inUse": false,
-    "ownerUsername": null,
-    "ownerId": null,
-    "startTime": "2025-01-31 21:37:03"
+    "inUse": true,
+    "ownerUsername": "scarton",
+    "ownerId": "677dc6688ffb40e59afdef96",
+    "startTime": "2025-02-06 00:48:29"
   },
   {
     "port": 8081,
     "inUse": false,
     "ownerUsername": null,
     "ownerId": null,
-    "startTime": "2024-12-27 23:16:34"
+    "startTime": "2025-02-06 00:37:46"
   },
   {
     "port": 8082,
     "inUse": false,
     "ownerUsername": null,
     "ownerId": null,
-    "startTime": "2024-12-27 23:08:57"
+    "startTime": "2025-02-06 00:21:07"
   },
   {
     "port": 8083,
     "inUse": false,
     "ownerUsername": null,
-    "ownerId": null
+    "ownerId": null,
+    "startTime": "2025-02-06 00:18:54"
   },
   {
     "port": 8084,
     "inUse": false,
     "ownerUsername": null,
-    "ownerId": null
+    "ownerId": null,
+    "startTime": "2025-02-06 00:18:54"
   },
   {
     "port": 8085,
     "inUse": false,
     "ownerUsername": null,
-    "ownerId": null
+    "ownerId": null,
+    "startTime": "2025-02-06 00:18:54"
   },
   {
     "port": 8086,
     "inUse": false,
     "ownerUsername": null,
-    "ownerId": null
+    "ownerId": null,
+    "startTime": "2025-02-06 00:18:54"
   }
 ]
