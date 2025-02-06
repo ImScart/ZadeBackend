@@ -1,9 +1,9 @@
 [
   {
     "port": 8080,
-    "inUse": true,
-    "ownerUsername": "scarton",
-    "ownerId": "677dc6688ffb40e59afdef96",
+    "inUse": false,
+    "ownerUsername": null,
+    "ownerId": null,
     "startTime": "2025-02-06 00:48:29"
   },
   {
